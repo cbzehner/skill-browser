@@ -25,6 +25,16 @@ No tools required upfront. The skill detects what's available and recommends ins
 
 ## Installation
 
+### From Marketplace
+
+```bash
+# Add the marketplace
+/plugin marketplace add cbzehner/skill-browser
+
+# Install the skill
+/plugin install browser@cbzehner
+```
+
 ### Manual Installation
 
 Clone into your `.claude/skills/` directory:
