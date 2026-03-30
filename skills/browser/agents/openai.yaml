@@ -1,0 +1,4 @@
+interface:
+  display_name: "Browser"
+  short_description: "Route browser tasks across available automation tools"
+  default_prompt: "Use $browser to interact with this site, choose the right browser tool, and report the results."

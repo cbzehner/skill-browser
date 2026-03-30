@@ -32,7 +32,10 @@ command -v agent-browser 2>/dev/null && agent-browser --version
 npx playwright --version 2>/dev/null
 npx playwright install --dry-run 2>/dev/null
 
-# Claude Code native: check if browser MCP tools exist in current tool list
+# Native browser tools: check if host exposes browser capabilities
+# Claude Code: computer tool or browser MCP tools
+# Codex: check for browser-capable tools in the current session
+# If no native browser tools detected, skip native in routing
 ```
 
 **Do not trust `command -v` alone.** A CLI can be installed without its browser binaries. Run the version/dry-run checks above to confirm the tool is actually usable.
@@ -72,7 +75,7 @@ Route by what the task **requires**, not by task label. Identify the needed capa
 
 Try these in order. Stop at the first one that works.
 
-1. **Native browser session** -- Claude Code native browser uses the user's existing login state. Zero config.
+1. **Native browser session** -- Host-native browser integration uses the user's existing login state. Zero config.
 2. **CDP connection** -- Connect to the user's running Chrome via `--cdp-url`. Both agent-browser and Playwright support this. Avoids profile locking.
 3. **Dedicated automation profile** -- A separate browser profile (not the user's active one) with saved storage state. Avoids the profile-locking crash from importing an active Chrome instance.
 4. **Cookie/storage import** -- Export cookies or localStorage from a logged-in session, import into the automation browser. Works but cookies expire.
