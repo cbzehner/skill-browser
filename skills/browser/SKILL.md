@@ -51,6 +51,28 @@ If a tool is installed mid-session, re-detect when the user says they have insta
 - **Output directory writable?** Ensure `.browser-artifacts/` exists and is writable.
 - **Screenshot-diff?** Verify the git working tree is clean (no uncommitted changes).
 
+## Reconnaissance (mandatory by default)
+
+Before any DOM interaction (click, fill, select, scroll), perform these steps. This is the "look before you touch" discipline — never act on assumptions about page state.
+
+### Steps
+
+1. **Wait for page load.** Use `networkidle` (agent-browser: `wait --load networkidle`, Playwright: `waitForLoadState('networkidle')`). This ensures async content, redirects, and client-side rendering have settled.
+2. **Snapshot the page.** Take a screenshot or accessibility snapshot before the first interaction. Store in `.browser-artifacts/`. This provides a visual/structural record of what the page actually looked like.
+3. **Verify target elements exist.** Before clicking or filling an element, confirm it is present in the snapshot or DOM. If using agent-browser, check the snapshot refs. If using Playwright, use a locator assertion (`expect(locator).toBeVisible()`).
+
+### On verification failure
+
+If a target element is missing or the page is not in the expected state:
+
+1. **Capture page state** — screenshot, accessibility snapshot, console errors, current URL.
+2. **Do not retry blindly** — report what was expected vs. what was found.
+3. **Save artifacts** to `.browser-artifacts/` for debugging.
+
+### Skipping reconnaissance
+
+Pass `--skip-recon` (or set `skip_recon: true` in the task context) to bypass these steps. Use this only for simple, non-interactive automation (e.g., a single screenshot of a known-stable page). The default is always to reconnoiter first.
+
 ## Capability-Driven Routing
 
 Route by what the task **requires**, not by task label. Identify the needed capabilities from this table, then pick the tool that covers the most.
