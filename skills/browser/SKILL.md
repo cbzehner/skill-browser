@@ -2,7 +2,8 @@
 name: browser
 description: Unified browser automation. Detects installed tools (agent-browser, Playwright, native), routes by capability, handles auth and cleanup. Use when the user needs to interact with a web page, test a UI, take screenshots, scrape content, debug a frontend, or record a session.
 argument-hint: "[url or task description]"
-allowed-tools: Bash, Read, Glob, Grep
+license: MIT
+allowed-tools: Bash Read Glob Grep
 # Note: Write/Edit intentionally excluded - this skill executes and reports, it does not modify project files
 ---
 
