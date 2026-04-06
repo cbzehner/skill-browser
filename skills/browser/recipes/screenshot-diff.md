@@ -1,40 +1,17 @@
 # Recipe: Screenshot Diff
 
-## When to use
-User wants to visually compare a page across git branches, before/after a change, or across deploys.
-
-## Required capabilities
-Screenshot capture.
-
-## Preferred tool -> Fallback
-**agent-browser** (fastest for screenshots) -> Playwright -> native
-
-## Prerequisites
-- Git working tree is clean (`git status --porcelain` returns empty). If dirty, warn user and stop.
-- Dev server running (or a way to start one) for the current branch
-- Target URL is accessible
+**When:** Visually compare a page across git branches or deploys.
+**Tools:** agent-browser → Playwright → native.
+**Prereqs:** Clean git working tree (`git status --porcelain` empty), dev server running.
 
 ## Steps
 
 ### 1. Screenshot current branch
 ```bash
-# Ensure .browser-artifacts/ exists
 mkdir -p .browser-artifacts
-
-# Screenshot with agent-browser
 agent-browser open http://localhost:3000/target-page
 agent-browser screenshot --full-page
 # Save to .browser-artifacts/current-branch-name.png
-
-# Or with Playwright (one-off script)
-node -e "
-import { chromium } from 'playwright';
-const b = await chromium.launch();
-const p = await b.newPage();
-await p.goto('http://localhost:3000/target-page');
-await p.screenshot({ path: '.browser-artifacts/current.png', fullPage: true });
-await b.close();
-"
 ```
 
 ### 2. Set up comparison branch via worktree
@@ -77,27 +54,20 @@ git worktree remove /tmp/browser-diff-worktree --force
 ```
 
 ## Output
-- Two labeled screenshots in `.browser-artifacts/`
-- Branch names clearly identified in filenames
+Two labeled screenshots in `.browser-artifacts/` with branch names in filenames.
 
-## Failure modes
-| Failure | Cause | Fix |
-|---------|-------|-----|
-| Dirty working tree | Uncommitted changes | Ask user to commit or stash first |
-| Worktree creation fails | Branch doesn't exist | Check branch name, list available branches |
-| Second server port conflict | Port 3001 already in use | Try ports 3002, 3003, etc. |
-| Screenshot fails | Page not loading | Check server is actually running on expected port |
-| Worktree removal fails | Files still in use | Kill server first, then force remove |
+## Cleanup (MUST happen even on failure)
+Kill comparison server → remove worktree → close browser sessions. Never leave orphaned worktrees or processes.
 
-## Cleanup
-**This cleanup MUST happen even on failure.** Use try/finally pattern:
-1. Kill the comparison dev server process
-2. Remove the git worktree
-3. Close any open browser sessions
-
-Never leave orphaned worktrees or server processes running.
+## Failure Modes
+| Failure | Fix |
+|---------|-----|
+| Dirty working tree | Ask user to commit or stash |
+| Worktree creation fails | Check branch name exists |
+| Port conflict on comparison server | Try ports 3002, 3003, etc. |
+| Worktree removal fails | Kill server first, then force remove |
 
 ## Gotchas
-- **Viewport normalization**: Set a consistent viewport size for both screenshots so differences are real, not from different window sizes. Use `--viewport 1280x720` or equivalent.
-- **Animation freezing**: If the page has animations, wait for `networkidle` and consider disabling CSS animations before screenshotting.
-- **Dynamic content**: Timestamps, random content, or ads will create false diffs. Note this to the user.
+- **Viewport:** Set consistent size for both screenshots (`--viewport 1280x720`)
+- **Animations:** Wait for `networkidle`, consider disabling CSS animations
+- **Dynamic content:** Timestamps/random content create false diffs — warn user

@@ -1,20 +1,8 @@
 # Recipe: Test App
 
-## When to use
-User asks to write, run, or fix E2E tests for a web application.
-
-## Required capabilities
-Deterministic scripted flow, assertions, optionally video recording.
-
-## Preferred tool -> Fallback
-**Playwright** -> agent-browser
-
-Falling back to agent-browser means: no test runner, no built-in assertions, no parallel execution. You'll need to manually navigate, snapshot, and verify conditions via element inspection. Tell the user about this tradeoff.
-
-## Prerequisites
-- Dev server running and reachable (preflight: `curl -s -o /dev/null -w "%{http_code}" http://localhost:PORT`)
-- If Playwright: `npx playwright --version` succeeds and browsers installed
-- If agent-browser: `command -v agent-browser` and Chrome available
+**When:** Write, run, or fix E2E tests.
+**Tools:** Playwright → agent-browser (no test runner, no assertions, no parallel — tell user about tradeoff).
+**Prereqs:** Dev server running and reachable.
 
 ## Steps (Playwright)
 1. Check if `playwright.config.js` or `playwright.config.ts` exists
@@ -68,20 +56,7 @@ Falling back to agent-browser means: no test runner, no built-in assertions, no 
    ```
 
 ## Output
-- Test results summary (pass/fail per test)
-- Screenshots of failures saved to `.browser-artifacts/`
-- Trace files if Playwright with `--trace on`
-- Video if Playwright configured with `video: 'retain-on-failure'`
-
-## Failure modes
-| Failure | Cause | Fix |
-|---------|-------|-----|
-| Dev server not reachable | Server not started | Ask user to start it, or detect the start command from package.json |
-| Browser binary missing | Playwright installed but browsers not | `npx playwright install` |
-| Test timeout | Selector not found or page too slow | Check selector, increase timeout, verify page loads |
-| Flaky test | Race condition or animation timing | Add `await page.waitForLoadState('networkidle')` or use web-first assertions |
+Test results (pass/fail), failure screenshots in `.browser-artifacts/`, traces (`--trace on`), video (`video: 'retain-on-failure'`).
 
 ## Cleanup
-- Playwright test runner handles browser cleanup automatically
-- agent-browser: run `agent-browser close` after testing
-- Video and trace files persist in `.browser-artifacts/` for user review
+Playwright handles cleanup automatically. agent-browser: `agent-browser close`. Artifacts persist for review.

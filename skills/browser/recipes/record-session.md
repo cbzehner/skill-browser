@@ -1,20 +1,8 @@
 # Recipe: Record Session
 
-## When to use
-User wants to capture a video or screenshot sequence of a user flow — for documentation, bug reports, or demos.
-
-## Required capabilities
-Video recording (Playwright only) or screenshot capture (any tool).
-
-## Preferred tool -> Fallback
-**Playwright** (native video recording) -> **agent-browser** (sequential screenshots — different artifact type, tell the user)
-
-Tell the user upfront: Playwright produces a video file (WebM). agent-browser produces a numbered sequence of screenshots. These are different deliverables.
-
-## Prerequisites
-- Target flow is accessible
-- `.browser-artifacts/` exists and is writable
-- For video: Playwright available with browsers installed
+**When:** Capture video or screenshot sequence of a user flow.
+**Tools:** Playwright (video, WebM) → agent-browser (sequential screenshots — tell user these are different deliverables).
+**Prereqs:** Target accessible, `.browser-artifacts/` writable.
 
 ## Steps (Playwright — video)
 ```javascript
@@ -61,21 +49,17 @@ agent-browser screenshot
 # Save as .browser-artifacts/session-recording/03-dashboard.png
 ```
 
-Name files with numbered prefixes and descriptive suffixes so the sequence is clear.
+Name files with numbered prefixes and descriptive suffixes.
 
 ## Output
-- **Playwright:** Video file at `.browser-artifacts/videos/*.webm`. Report the file path.
-- **agent-browser:** Numbered screenshots at `.browser-artifacts/session-recording/`. List all files with descriptions.
+Playwright: `.browser-artifacts/videos/*.webm`. agent-browser: `.browser-artifacts/session-recording/NN-description.png`.
 
-## Failure modes
-| Failure | Cause | Fix |
-|---------|-------|-----|
-| Video not saved | Context not closed before browser | Always `await context.close()` before `browser.close()` |
-| Video is black/empty | Page didn't render in time | Add `waitForLoadState('networkidle')` before interactions |
-| Screenshot misses transient state | Action completes too fast | Add short waits or `waitForLoadState` between steps |
-| Long flow exceeds timeout | Too many steps | Increase per-step timeout, or split into multiple recordings |
+## Failure Modes
+| Failure | Fix |
+|---------|-----|
+| Video not saved | `await context.close()` before `browser.close()` |
+| Video is black/empty | Add `waitForLoadState('networkidle')` before interactions |
+| Screenshot misses transient state | Add waits between steps |
 
 ## Cleanup
-Close browser session. Videos and screenshots persist in `.browser-artifacts/` for the user to review. Do not delete them automatically.
-- agent-browser: `agent-browser close`
-- Playwright: `await context.close()` then `await browser.close()`
+**Critical:** `await context.close()` before `browser.close()` (video saves on context close). Artifacts persist for user review.

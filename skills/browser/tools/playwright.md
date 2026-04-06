@@ -89,23 +89,13 @@ page.on('console', msg => console.log(`[${msg.type()}] ${msg.text()}`));
 page.on('pageerror', err => console.error('Page error:', err.message));
 ```
 
-## AI Agents (2026)
-Playwright has built-in AI agents:
-- **Planner**: Plans test steps from natural language
-- **Generator**: Generates test code from descriptions
-- **Healer**: Auto-fixes broken selectors (75%+ success rate)
-
-## Auth / Session Persistence
+## Auth
 ```javascript
 // Save auth state
 await context.storageState({ path: '.browser-artifacts/auth.json' });
-
 // Reuse auth state
 const context = await browser.newContext({ storageState: '.browser-artifacts/auth.json' });
-```
-
-CDP connection:
-```javascript
+// CDP connection
 const browser = await chromium.connectOverCDP('http://localhost:9222');
 ```
 
@@ -119,28 +109,10 @@ npx playwright show-trace trace.zip
 ```
 
 ## Output Format
-- Test results: stdout with pass/fail per test
-- Screenshots: PNG files
-- Videos: WebM files
-- Traces: ZIP files viewable in browser
-- HAR: JSON network capture
-- Raw HTML via `page.content()` — WARNING: token-expensive, prefer targeted extraction with `page.locator().textContent()`
+Test results (stdout), screenshots (PNG), videos (WebM), traces (ZIP), HAR (JSON). Avoid `page.content()` — use `locator().textContent()` for token efficiency.
 
-## Strengths
-- Multi-browser (Chromium, Firefox, WebKit)
-- Built-in test runner with assertions, retries, parallel execution
-- Video recording and trace viewer
-- Network interception and HAR recording
-- Console capture
-- AI agents for self-healing tests
-- Mobile emulation
-- Mature, well-documented, large ecosystem
-
-## Limitations
-- Heavier than agent-browser (Node.js runtime)
-- Raw HTML output is token-expensive (use targeted extraction)
-- No AI-optimized element references (use locators or accessibility snapshots)
-- More complex API surface
+## Strengths / Limitations
+Multi-browser, test runner, video, network interception, traces, mobile emulation, mature ecosystem. Heavier than agent-browser (Node.js), raw HTML is token-expensive (use targeted extraction via `locator().textContent()`).
 
 ## Common Failures
 | Failure | Cause | Fix |

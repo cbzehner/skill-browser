@@ -1,19 +1,8 @@
 # Recipe: Debug UI
 
-## When to use
-User is investigating a frontend bug — console errors, network failures, layout issues, unexpected behavior.
-
-## Required capabilities
-Exploratory interaction; optionally network inspection.
-
-## Preferred tool -> Fallback
-**native** (interactive, already authenticated) -> **agent-browser** (fast snapshots for exploration) -> **Playwright** (when network inspection or request interception is specifically needed)
-
-Routing note: default to interactive/exploratory tools. Only reach for Playwright when the user specifically needs network-level debugging (request/response inspection, HAR recording).
-
-## Prerequisites
-- Page or dev server accessible (preflight: `curl -s -o /dev/null -w "%{http_code}" http://localhost:PORT`)
-- Know the URL and rough area of the bug
+**When:** Frontend bug investigation (console errors, network failures, layout issues).
+**Tools:** native → agent-browser → Playwright (only for network-level debugging).
+**Prereqs:** Page accessible, know URL and bug area.
 
 ## Steps (native or agent-browser — exploratory)
 1. Navigate to the problematic page:
@@ -62,21 +51,7 @@ await browser.close();
 ```
 
 ## Output
-- Console errors and warnings
-- Failed network requests (if Playwright)
-- DOM state summary (elements present, missing, unexpected)
-- Annotated screenshot saved to `.browser-artifacts/`
-- HAR file if network debugging was needed
-
-## Failure modes
-| Failure | Cause | Fix |
-|---------|-------|-----|
-| Page crashes | JS error or resource exhaustion | Capture last known state, check console for clues |
-| Console too noisy | Many warnings/logs | Filter for `error` and `warning` types only |
-| Can't reproduce | Bug is intermittent | Try multiple times, check for race conditions or timing |
-| Auth required | Page behind login | Handle auth first (see SKILL.md auth modes) |
+Console errors, failed requests (Playwright), DOM state summary, annotated screenshot, HAR file (if needed). All saved to `.browser-artifacts/`.
 
 ## Cleanup
-Close browser session. HAR files and screenshots persist in `.browser-artifacts/`.
-- agent-browser: `agent-browser close`
-- Playwright: `await browser.close()`
+`agent-browser close` or `await browser.close()`. Artifacts persist in `.browser-artifacts/`.

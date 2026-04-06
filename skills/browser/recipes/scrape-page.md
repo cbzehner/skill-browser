@@ -1,17 +1,8 @@
 # Recipe: Scrape Page
 
-## When to use
-User wants to extract structured data from a web page (tables, prices, text content, lists).
-
-## Required capabilities
-Token-efficient page reading, structured data extraction.
-
-## Preferred tool -> Fallback
-**agent-browser** (accessibility tree is token-efficient and semantic) -> native -> Playwright (use targeted extraction with `locator().textContent()`, NOT `page.content()`)
-
-## Prerequisites
-- Target URL accessible
-- If authenticated content, handle auth first (see SKILL.md auth modes)
+**When:** Extract structured data from a web page (tables, prices, text, lists).
+**Tools:** agent-browser (token-efficient) → native → Playwright (use `locator().textContent()`, NOT `page.content()`).
+**Prereqs:** URL accessible. Auth content → handle auth first (SKILL.md).
 
 ## Steps (agent-browser)
 1. Navigate to the target page:
@@ -59,20 +50,10 @@ If data spans multiple pages:
 4. Re-snapshot and extract
 5. Repeat until no more pages or user-specified limit reached
 
-Always show a preview before extracting large datasets.
+Show a preview of the first few items before extracting large datasets.
 
 ## Output
-Structured data in the format the user requested (JSON, markdown table, plain text). Show a preview of the first few items before extracting everything.
-
-## Failure modes
-| Failure | Cause | Fix |
-|---------|-------|-----|
-| Anti-bot detection | Site blocks automated browsers | Try different user agent, or ask user to load page manually |
-| Dynamic content not loaded | JS hasn't rendered yet | Add `waitForLoadState('networkidle')` before snapshotting |
-| Login required | Content behind auth wall | Handle auth first (see SKILL.md auth modes), warn user about authenticated scraping |
-| Rate limiting | Too many requests | Add delays between page loads |
+Structured data in user's requested format (JSON, markdown table, plain text).
 
 ## Cleanup
-Close browser session after extraction. No persistent processes needed.
-- agent-browser: `agent-browser close`
-- Playwright: `await browser.close()`
+Close browser session. `agent-browser close` or `await browser.close()`.

@@ -5,148 +5,99 @@ argument-hint: "[url or task description]"
 arguments:
   - url_or_task
 license: MIT
-effort: medium
 allowed-tools: Bash Read Glob Grep
 # Note: Write/Edit intentionally excluded - this skill executes and reports, it does not modify project files
 ---
 
 # Browser
 
-Detect available browser tools, route tasks by capability, handle auth and cleanup.
-
 ## Trigger
 
-Activate when the user asks to:
-- Navigate to or interact with a web page
-- Test a UI or write E2E tests
-- Take a screenshot or record a video
-- Scrape or extract data from a site
-- Debug a frontend (console errors, network, layout)
-- Compare pages visually across branches
+Activate when the user asks to: navigate/interact with a web page, test a UI, take screenshots or video, scrape data, debug a frontend, or visually compare pages across branches.
 
 ## Detection & Preflight
 
 On the first browser task in a session, run these probes to determine what is available. Cache results for the session.
 
 ```bash
-# agent-browser: binary AND Chrome installed
 command -v agent-browser 2>/dev/null && agent-browser --version
-
-# Playwright: CLI AND browser binaries
 npx playwright --version 2>/dev/null
 npx playwright install --dry-run 2>/dev/null
-
-# Native browser tools: check if host exposes browser capabilities
-# Claude Code: computer tool or browser MCP tools
-# Codex: check for browser-capable tools in the current session
-# If no native browser tools detected, skip native in routing
+# Native: check if host exposes browser MCP tools
 ```
 
-**Do not trust `command -v` alone.** A CLI can be installed without its browser binaries. Run the version/dry-run checks above to confirm the tool is actually usable.
+<!-- WHY: CLI can exist without browser binaries — command -v alone gives false positives -->
+**Do not trust `command -v` alone** — run version/dry-run checks to confirm usability. Re-detect if user installs tools mid-session.
 
-If a tool is installed mid-session, re-detect when the user says they have installed it.
+### Preflight (before every recipe)
 
-### Preflight Checks (before every recipe)
-
-- **Localhost target?** Verify the server is reachable:
-  ```bash
-  curl -s -o /dev/null -w "%{http_code}" http://localhost:PORT
-  ```
-- **Output directory writable?** Ensure `.browser-artifacts/` exists and is writable.
-- **Screenshot-diff?** Verify the git working tree is clean (no uncommitted changes).
+- **Localhost target?** `curl -s -o /dev/null -w "%{http_code}" http://localhost:PORT`
+- **Output dir?** Ensure `.browser-artifacts/` exists
+- **Screenshot-diff?** Verify git working tree is clean
 
 ## Reconnaissance (mandatory by default)
 
-Before any DOM interaction (click, fill, select, scroll), perform these steps. This is the "look before you touch" discipline — never act on assumptions about page state.
+<!-- WHY: Without this, model clicks elements without verifying page state -->
+Before any DOM interaction: look before you touch.
 
-### Steps
+1. **Wait for load** — use `networkidle` to let async content settle
+2. **Snapshot** — screenshot or accessibility snapshot before first interaction, save to `.browser-artifacts/`
+3. **Verify targets exist** — confirm elements are present before acting (agent-browser: check refs, Playwright: `expect(locator).toBeVisible()`)
 
-1. **Wait for page load.** Use `networkidle` (agent-browser: `wait --load networkidle`, Playwright: `waitForLoadState('networkidle')`). This ensures async content, redirects, and client-side rendering have settled.
-2. **Snapshot the page.** Take a screenshot or accessibility snapshot before the first interaction. Store in `.browser-artifacts/`. This provides a visual/structural record of what the page actually looked like.
-3. **Verify target elements exist.** Before clicking or filling an element, confirm it is present in the snapshot or DOM. If using agent-browser, check the snapshot refs. If using Playwright, use a locator assertion (`expect(locator).toBeVisible()`).
+**On failure:** capture page state (screenshot, console errors, URL), report expected vs. found. Do not retry blindly.
 
-### On verification failure
-
-If a target element is missing or the page is not in the expected state:
-
-1. **Capture page state** — screenshot, accessibility snapshot, console errors, current URL.
-2. **Do not retry blindly** — report what was expected vs. what was found.
-3. **Save artifacts** to `.browser-artifacts/` for debugging.
-
-### Skipping reconnaissance
-
-Pass `--skip-recon` (or set `skip_recon: true` in the task context) to bypass these steps. Use this only for simple, non-interactive automation (e.g., a single screenshot of a known-stable page). The default is always to reconnoiter first.
+**Skip with** `--skip-recon` for simple non-interactive automation (e.g., single screenshot of a stable page).
 
 ## Capability-Driven Routing
 
 Route by what the task **requires**, not by task label. Identify the needed capabilities from this table, then pick the tool that covers the most.
 
-| Capability needed | Best tool | Why |
-|---|---|---|
-| Deterministic scripted flow | Playwright | Test runner, retries, assertions, parallel execution |
-| Exploratory interaction | agent-browser / native | Fast snapshots, semantic refs, interactive |
-| Token-efficient page reading | agent-browser | Accessibility tree is 82% smaller than raw HTML |
-| Video recording | Playwright | Only tool with native video capture |
-| Network inspection | Playwright | Request interception, HAR recording, console capture |
-| Multi-browser coverage | Playwright | Chrome, Firefox, WebKit |
-| Zero-setup, already authenticated | native | Uses user's existing browser session |
-| Structured data extraction | agent-browser | Snapshot refs enable precise targeted extraction |
-| Screenshot capture | agent-browser / Playwright | agent-browser for speed, Playwright for full-page/element options |
+| Capability | Best tool |
+|---|---|
+| Deterministic scripted flow (tests, assertions) | Playwright |
+| Exploratory interaction | agent-browser / native |
+| Token-efficient page reading | agent-browser (accessibility tree, 82% smaller) |
+| Video recording / network inspection / multi-browser | Playwright |
+| Zero-setup, already authenticated | native |
+| Structured data extraction | agent-browser |
+| Screenshot capture | agent-browser (speed) / Playwright (full-page/element) |
 
-**Tie-breaking order:** native > agent-browser > Playwright (least overhead first).
-
-**Fallback changes the workflow.** When falling back from one tool to another, tell the user what changes. For example, falling back from Playwright to agent-browser for E2E testing means losing the test runner and switching to manual agentic assertions. Do not present fallbacks as interchangeable.
+**Tie-breaking:** native > agent-browser > Playwright (least overhead first). When falling back, tell the user what capabilities change — do not present tools as interchangeable.
 
 ## Auth Modes
 
-Try these in order. Stop at the first one that works.
+<!-- WHY: Ordered fallback prevents trying complex approaches first or asking for passwords -->
+Try in order, stop at first success:
 
-1. **Native browser session** -- Host-native browser integration uses the user's existing login state. Zero config.
-2. **CDP connection** -- Connect to the user's running Chrome via `--cdp-url`. Both agent-browser and Playwright support this. Avoids profile locking.
-3. **Dedicated automation profile** -- A separate browser profile (not the user's active one) with saved storage state. Avoids the profile-locking crash from importing an active Chrome instance.
-4. **Cookie/storage import** -- Export cookies or localStorage from a logged-in session, import into the automation browser. Works but cookies expire.
-5. **Manual login checkpoint** -- Launch a headed browser, ask the user to log in manually, save session state. Last resort but always works.
+1. **Native session** — user's existing login state, zero config
+2. **CDP** (`--cdp-url`) — connect to running Chrome, avoids profile locking
+3. **Dedicated profile** — separate automation profile with saved storage state
+4. **Cookie import** — export/import cookies (expire over time)
+5. **Manual checkpoint** — headed browser, user logs in, save state. Last resort.
 
-**Never supported:** Never ask for passwords. Never store credentials in plaintext. Never attempt to bypass MFA programmatically.
+**Never:** ask for passwords, store credentials in plaintext, bypass MFA programmatically.
 
 ## Failure Policy
 
-When a browser tool fails mid-task:
+<!-- WHY: Prevents silent retries and zombie browser processes -->
+On failure: capture error (screenshot, console, exit code) → clean up browser processes → report clearly → diagnose before retrying (timeout? anti-bot? auth? dependency?). If tool-specific, suggest an alternative tool.
 
-1. **Capture the error** -- screenshot if possible, console output, exit code.
-2. **Clean up** -- kill spawned browser processes (`pkill -f "chrome.*--remote-debugging"` or equivalent). Close open sessions.
-3. **Report clearly** -- show what failed, what was attempted, and what state things are in.
-4. **Do not silently retry** -- diagnose first (timeout? anti-bot? auth expired? missing dependency?).
-5. **Suggest alternatives** -- if the failure is tool-specific, recommend trying with another available tool.
-
-**Timeouts:** Default 30s per navigation. For slow pages, use explicit waits (`wait --load networkidle` for agent-browser, `waitForLoadState` for Playwright) rather than increasing the global timeout.
+**Timeouts:** 30s default. Use explicit waits (`networkidle`) for slow pages rather than increasing global timeout.
 
 ## Security & Privacy
 
-- **Artifact storage:** All screenshots, videos, HAR files go to `.browser-artifacts/` in the project root. Add it to `.gitignore` if not already present.
-- **Credential redaction:** Never log, display, or store passwords, tokens, or session cookies in output. If a HAR file contains auth headers, warn the user before saving.
-- **Authenticated scraping:** Do not silently scrape content behind authentication. Tell the user what you are about to access and why.
-- **No external upload:** Never send screenshots, videos, or scraped content to external services without explicit user approval.
+<!-- WHY: Browser-specific risks (HAR with auth headers, authenticated scraping) aren't covered by general security guidance -->
+- All artifacts go to `.browser-artifacts/` — add to `.gitignore`
+- Never log/store passwords, tokens, or session cookies. Warn before saving HAR files with auth headers.
+- Do not silently scrape authenticated content — tell the user what you're accessing and why
+- Never upload artifacts to external services without explicit approval
 
 ## No Tools Found
 
-When detection finds nothing installed:
-
-1. Report what was checked and that no browser tools were found.
-2. Recommend based on context:
-   - **Default:** agent-browser -- AI-optimized, token-efficient, fast.
-     ```
-     npm i -g agent-browser && agent-browser install
-     ```
-   - **Testing or video recording needed:** also recommend Playwright.
-     ```
-     npm i -D @playwright/test && npx playwright install
-     ```
-   - **Python-only environment:** mention browser-use as an alternative.
-     ```
-     uv add browser-use
-     ```
-3. **Wait for user approval before installing anything.**
+Report what was checked. Recommend based on context (wait for user approval before installing):
+- **Default:** `npm i -g agent-browser && agent-browser install`
+- **Testing/video:** also `npm i -D @playwright/test && npx playwright install`
+- **Python-only:** `uv add browser-use`
 
 ## References
 

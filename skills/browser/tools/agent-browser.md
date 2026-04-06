@@ -35,12 +35,7 @@ agent-browser snapshot -i
 **Critical: Refs are invalidated when the page changes.** Always re-snapshot after clicking links, submitting forms, or triggering dynamic content.
 
 ## Element Selection
-- **Refs** (`@e1`) -- from snapshots, recommended for AI use
-- **Semantic locators** -- `role=button[name="Submit"]`, `text=Click me`
-- **CSS selectors** -- `#id`, `.class`, `div > span`
-- **XPath** -- `//div[@class='content']`
-
-Prefer refs. Fall back to semantic locators. Use CSS/XPath only when refs and semantics don't work.
+Prefer refs (`@e1`) → semantic locators (`role=button[name="Submit"]`) → CSS/XPath as last resort.
 
 ## Screenshots
 ```bash
@@ -57,41 +52,19 @@ agent-browser get url               # Current page URL
 agent-browser get title             # Page title
 ```
 
-## Batch Operations
-Execute multiple commands in one invocation via JSON piping:
-```bash
-echo '[{"command":"open","args":["https://example.com"]},{"command":"snapshot","args":["-i"]}]' | agent-browser
-```
-
 ## Auth
-- **Import from browser:** `agent-browser auth import` (imports from user's Chrome)
-- **CDP connection:** `agent-browser --cdp-url ws://localhost:9222`
-- **Profile persistence:** Sessions persist across commands by default
+`agent-browser auth import` (from Chrome) | `--cdp-url ws://localhost:9222` (CDP) | Sessions persist by default.
 
 ## Output Format
-Returns an **accessibility tree** with element references -- 82% less context than raw HTML. Example:
+Accessibility tree with element refs (82% less context than HTML):
 ```
 [page] Example Site
-  [heading] Welcome
   [button @e1] Sign In
   [textbox @e2] Email
-  [textbox @e3] Password
-  [link @e4] Forgot password?
 ```
 
-## Strengths
-- Token-efficient (82% less context than Playwright/raw HTML)
-- Fast (Rust native binary, no Node.js startup)
-- AI-optimized element references
-- Semantic understanding of page structure
-
-## Limitations
-- Chrome-only (no Firefox, Safari, WebKit)
-- No test runner or assertion framework
-- No video recording (use sequential screenshots as workaround)
-- No network inspection or request interception
-- Newer project, less documentation than Playwright
-- Cannot run in parallel with another agent-browser session on same Chrome instance
+## Strengths / Limitations
+Token-efficient (82% less context), fast (Rust binary), AI-optimized refs. Chrome-only, no test runner, no video, no network inspection, no parallel sessions on same Chrome.
 
 ## Common Failures
 | Failure | Cause | Fix |
