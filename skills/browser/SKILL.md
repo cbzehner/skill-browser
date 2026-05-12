@@ -1,6 +1,13 @@
 ---
 name: browser
-description: Unified browser automation. Detects installed tools (agent-browser, Playwright, native), routes by capability, handles auth and cleanup. Use when the user needs to interact with a web page, test a UI, take screenshots, scrape content, debug a frontend, or record a session.
+description: >-
+  Unified browser automation for opening, visiting, browsing, interacting with,
+  testing, scraping, screenshotting, visually inspecting, or debugging web pages
+  and local frontends. Use when the user asks to use a browser, Chrome, DevTools,
+  Playwright, agent-browser, chrome-devtools-axi, inspect a URL, click/fill a
+  page, check a site, capture a screenshot/video, compare visual output, scrape
+  page content, debug console/network/UI issues, or verify an app in practice.
+  Detects installed tools, routes by capability, handles auth, and cleans up.
 argument-hint: "[url or task description]"
 arguments:
   - url_or_task
@@ -20,6 +27,7 @@ Activate when the user asks to: navigate/interact with a web page, test a UI, ta
 On the first browser task in a session, run these probes to determine what is available. Cache results for the session.
 
 ```bash
+command -v chrome-devtools-axi 2>/dev/null && chrome-devtools-axi --version
 command -v agent-browser 2>/dev/null && agent-browser --version
 npx playwright --version 2>/dev/null
 npx playwright install --dry-run 2>/dev/null
@@ -55,14 +63,14 @@ Route by what the task **requires**, not by task label. Identify the needed capa
 | Capability | Best tool |
 |---|---|
 | Deterministic scripted flow (tests, assertions) | Playwright |
-| Exploratory interaction | agent-browser / native |
-| Token-efficient page reading | agent-browser (accessibility tree, 82% smaller) |
+| Exploratory interaction | chrome-devtools-axi / agent-browser / native |
+| Token-efficient page reading | chrome-devtools-axi (TOON output, ~40% smaller than JSON) / agent-browser (accessibility tree) |
 | Video recording / network inspection / multi-browser | Playwright |
-| Zero-setup, already authenticated | native |
-| Structured data extraction | agent-browser |
-| Screenshot capture | agent-browser (speed) / Playwright (full-page/element) |
+| Zero-setup, already authenticated | native / chrome-devtools-axi connected to an existing CDP browser |
+| Structured data extraction | chrome-devtools-axi (TOON, pre-computed aggregates) / agent-browser |
+| Screenshot capture | chrome-devtools-axi / agent-browser (speed) / Playwright (full-page/element) |
 
-**Tie-breaking:** native > agent-browser > Playwright (least overhead first). When falling back, tell the user what capabilities change — do not present tools as interchangeable.
+**Tie-breaking:** chrome-devtools-axi > native > agent-browser > Playwright when the task is exploratory and text-heavy; choose Playwright first for deterministic tests, video, or cross-browser checks. When falling back, tell the user what capabilities change — do not present tools as interchangeable.
 
 ## Auth Modes
 
@@ -95,13 +103,14 @@ On failure: capture error (screenshot, console, exit code) → clean up browser 
 ## No Tools Found
 
 Report what was checked. Recommend based on context (wait for user approval before installing):
-- **Default:** `npm i -g agent-browser && agent-browser install`
+- **Default (best benchmarks):** `npm install -g chrome-devtools-axi`
+- **Alternative:** `npm i -g agent-browser && agent-browser install`
 - **Testing/video:** also `npm i -D @playwright/test && npx playwright install`
 - **Python-only:** `uv add browser-use`
 
 ## References
 
-- Tool reference cards: [tools/agent-browser.md](tools/agent-browser.md), [tools/playwright.md](tools/playwright.md), [tools/native.md](tools/native.md)
+- Tool reference cards: [tools/chrome-devtools-axi.md](tools/chrome-devtools-axi.md), [tools/agent-browser.md](tools/agent-browser.md), [tools/playwright.md](tools/playwright.md), [tools/native.md](tools/native.md)
 - Recipes: [recipes/test-app.md](recipes/test-app.md), [recipes/screenshot-diff.md](recipes/screenshot-diff.md), [recipes/scrape-page.md](recipes/scrape-page.md), [recipes/debug-ui.md](recipes/debug-ui.md), [recipes/record-session.md](recipes/record-session.md)
 
 Read tool cards and recipes on demand when executing a task. Do not load them all upfront.
