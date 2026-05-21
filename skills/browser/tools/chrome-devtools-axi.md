@@ -44,7 +44,7 @@ chrome-devtools-axi click @e1
 chrome-devtools-axi fill @e2 "text"
 
 # Screenshot
-chrome-devtools-axi screenshot --output .browser-artifacts/page.png
+chrome-devtools-axi screenshot --output .agent/evidence/<run-slug>/artifacts/page.png
 ```
 
 ## Auth

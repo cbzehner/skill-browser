@@ -43,7 +43,7 @@ agent-browser screenshot                    # Standard
 agent-browser screenshot --annotated        # With element labels
 agent-browser screenshot --full-page        # Entire scrollable page
 ```
-Save to .browser-artifacts/ directory.
+Save to .agent/evidence/<run-slug>/artifacts/ directory.
 
 ## Data Extraction
 ```bash

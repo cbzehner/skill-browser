@@ -30,7 +30,7 @@
 import { chromium } from 'playwright';
 const browser = await chromium.launch();
 const context = await browser.newContext({
-  recordHar: { path: '.browser-artifacts/debug.har' }
+  recordHar: { path: '.agent/evidence/<run-slug>/artifacts/debug.har' }
 });
 const page = await context.newPage();
 
@@ -45,13 +45,13 @@ page.on('requestfailed', req =>
 
 await page.goto('http://localhost:3000/buggy-page');
 // ... interact to reproduce the bug
-await page.screenshot({ path: '.browser-artifacts/debug-screenshot.png' });
+await page.screenshot({ path: '.agent/evidence/<run-slug>/artifacts/debug-screenshot.png' });
 await context.close();
 await browser.close();
 ```
 
 ## Output
-Console errors, failed requests (Playwright), DOM state summary, annotated screenshot, HAR file (if needed). All saved to `.browser-artifacts/`.
+Console errors, failed requests (Playwright), DOM state summary, annotated screenshot, HAR file (if needed). All saved to `.agent/evidence/<run-slug>/artifacts/`.
 
 ## Cleanup
-`agent-browser close` or `await browser.close()`. Artifacts persist in `.browser-artifacts/`.
+`agent-browser close` or `await browser.close()`. Artifacts persist in `.agent/evidence/<run-slug>/artifacts/`.

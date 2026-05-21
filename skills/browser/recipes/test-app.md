@@ -56,7 +56,7 @@
    ```
 
 ## Output
-Test results (pass/fail), failure screenshots in `.browser-artifacts/`, traces (`--trace on`), video (`video: 'retain-on-failure'`).
+Test results (pass/fail), failure screenshots in `.agent/evidence/<run-slug>/artifacts/`, traces (`--trace on`), video (`video: 'retain-on-failure'`).
 
 ## Cleanup
 Playwright handles cleanup automatically. agent-browser: `agent-browser close`. Artifacts persist for review.

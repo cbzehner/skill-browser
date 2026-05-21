@@ -40,7 +40,7 @@ npx playwright install --dry-run 2>/dev/null
 ### Preflight (before every recipe)
 
 - **Localhost target?** `curl -s -o /dev/null -w "%{http_code}" http://localhost:PORT`
-- **Output dir?** Ensure `.browser-artifacts/` exists
+- **Evidence bundle?** Ensure `.agent/evidence/<run-slug>/artifacts/` exists when saving screenshots, traces, videos, logs, or HARs.
 - **Screenshot-diff?** Verify git working tree is clean
 
 ## Reconnaissance (mandatory by default)
@@ -49,7 +49,7 @@ npx playwright install --dry-run 2>/dev/null
 Before any DOM interaction: look before you touch.
 
 1. **Wait for load** — use `networkidle` to let async content settle
-2. **Snapshot** — screenshot or accessibility snapshot before first interaction, save to `.browser-artifacts/`
+2. **Snapshot** — screenshot or accessibility snapshot before first interaction, save bulky files under `.agent/evidence/<run-slug>/artifacts/`
 3. **Verify targets exist** — confirm elements are present before acting (agent-browser: check refs, Playwright: `expect(locator).toBeVisible()`)
 
 **On failure:** capture page state (screenshot, console errors, URL), report expected vs. found. Do not retry blindly.
@@ -95,7 +95,8 @@ On failure: capture error (screenshot, console, exit code) → clean up browser 
 ## Security & Privacy
 
 <!-- WHY: Browser-specific risks (HAR with auth headers, authenticated scraping) aren't covered by general security guidance -->
-- All artifacts go to `.browser-artifacts/` — add to `.gitignore`
+- Browser artifacts go under `.agent/evidence/<run-slug>/artifacts/`; the parent evidence bundle may also contain `manifest.json`, `checks.ndjson`, `index.html`, and `summary.md`.
+- Add `.agent/evidence/` to `.gitignore` unless the user explicitly wants to commit a fixture.
 - Never log/store passwords, tokens, or session cookies. Warn before saving HAR files with auth headers.
 - Do not silently scrape authenticated content — tell the user what you're accessing and why
 - Never upload artifacts to external services without explicit approval

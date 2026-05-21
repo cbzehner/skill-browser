@@ -25,7 +25,7 @@ import { chromium } from 'playwright';
 const browser = await chromium.launch();
 const page = await browser.newPage();
 await page.goto('https://example.com');
-await page.screenshot({ path: '.browser-artifacts/screenshot.png' });
+await page.screenshot({ path: '.agent/evidence/<run-slug>/artifacts/screenshot.png' });
 await browser.close();
 ```
 
@@ -49,16 +49,16 @@ Opens a browser and generates test code from your actions.
 
 ## Screenshots
 ```javascript
-await page.screenshot({ path: '.browser-artifacts/screenshot.png' });            // Viewport
-await page.screenshot({ path: '.browser-artifacts/full.png', fullPage: true });  // Full page
-await page.locator('.element').screenshot({ path: '.browser-artifacts/el.png' }); // Element
+await page.screenshot({ path: '.agent/evidence/<run-slug>/artifacts/screenshot.png' });            // Viewport
+await page.screenshot({ path: '.agent/evidence/<run-slug>/artifacts/full.png', fullPage: true });  // Full page
+await page.locator('.element').screenshot({ path: '.agent/evidence/<run-slug>/artifacts/el.png' }); // Element
 ```
 
 ## Video Recording
 ```javascript
 // In playwright.config.js or per-test
 const context = await browser.newContext({
-  recordVideo: { dir: '.browser-artifacts/videos/' }
+  recordVideo: { dir: '.agent/evidence/<run-slug>/artifacts/videos/' }
 });
 // ... do interactions ...
 await context.close(); // Video saved on close
@@ -80,7 +80,7 @@ page.on('response', res => console.log(res.status(), res.url()));
 await page.route('**/api/**', route => route.fulfill({ body: '{"mock":true}' }));
 
 // HAR recording
-const context = await browser.newContext({ recordHar: { path: '.browser-artifacts/trace.har' } });
+const context = await browser.newContext({ recordHar: { path: '.agent/evidence/<run-slug>/artifacts/trace.har' } });
 ```
 
 ## Console Capture
@@ -92,9 +92,9 @@ page.on('pageerror', err => console.error('Page error:', err.message));
 ## Auth
 ```javascript
 // Save auth state
-await context.storageState({ path: '.browser-artifacts/auth.json' });
+await context.storageState({ path: '.agent/evidence/<run-slug>/artifacts/auth.json' });
 // Reuse auth state
-const context = await browser.newContext({ storageState: '.browser-artifacts/auth.json' });
+const context = await browser.newContext({ storageState: '.agent/evidence/<run-slug>/artifacts/auth.json' });
 // CDP connection
 const browser = await chromium.connectOverCDP('http://localhost:9222');
 ```

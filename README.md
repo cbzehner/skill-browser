@@ -78,7 +78,7 @@ browser/
 
 ## Security
 
-- All artifacts (screenshots, videos, HAR files) go to `.browser-artifacts/`, gitignored
+- Browser artifacts (screenshots, videos, HAR files) go under `.agent/evidence/<run-slug>/artifacts/`; evidence bundles are local by default and should be gitignored.
 - Credentials are never logged or stored in plaintext
 - Authenticated pages require explicit user acknowledgment
 - Nothing is uploaded to external services without approval

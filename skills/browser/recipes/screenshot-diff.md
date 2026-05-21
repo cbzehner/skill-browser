@@ -8,10 +8,10 @@
 
 ### 1. Screenshot current branch
 ```bash
-mkdir -p .browser-artifacts
+mkdir -p .agent/evidence/<run-slug>/artifacts
 agent-browser open http://localhost:3000/target-page
 agent-browser screenshot --full-page
-# Save to .browser-artifacts/current-branch-name.png
+# Save to .agent/evidence/<run-slug>/artifacts/current-branch-name.png
 ```
 
 ### 2. Set up comparison branch via worktree
@@ -33,7 +33,7 @@ until curl -s -o /dev/null http://localhost:3001; do sleep 1; done
 ```bash
 agent-browser open http://localhost:3001/target-page
 agent-browser screenshot --full-page
-# Save to .browser-artifacts/comparison-branch-name.png
+# Save to .agent/evidence/<run-slug>/artifacts/comparison-branch-name.png
 ```
 
 ### 4. Present results
@@ -54,7 +54,7 @@ git worktree remove /tmp/browser-diff-worktree --force
 ```
 
 ## Output
-Two labeled screenshots in `.browser-artifacts/` with branch names in filenames.
+Two labeled screenshots in `.agent/evidence/<run-slug>/artifacts/` with branch names in filenames.
 
 ## Cleanup (MUST happen even on failure)
 Kill comparison server → remove worktree → close browser sessions. Never leave orphaned worktrees or processes.
