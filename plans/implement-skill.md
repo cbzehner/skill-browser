@@ -66,7 +66,7 @@ Create skills/browser/recipes/debug-ui.md — Inspect console errors, network, l
 
 ## Write recipe: record-session
 
-Create skills/browser/recipes/record-session.md — Capture video (Playwright) or screenshot sequence (agent-browser). Steps for each tool variant, artifact storage in .browser-artifacts/, cleanup.
+Create skills/browser/recipes/record-session.md — Capture video (Playwright) or screenshot sequence (agent-browser). Steps for each tool variant, artifact storage under `.agent/evidence/<run-slug>/artifacts/`, cleanup.
 
 ## Symlink and verify
 
