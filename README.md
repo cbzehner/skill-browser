@@ -1,87 +1,59 @@
 # Browser
 
-Unified browser automation for Claude Code. Detects available tools, routes tasks by capability, and handles auth, failures, and cleanup.
+Unified browser automation for opening, visiting, browsing, interacting with, testing, scraping, screenshotting, visually inspecting, or debugging web pages and local frontends. Use when the user asks to use a browser, Chrome, DevTools, Playwright, agent-browser, chrome-devtools-axi, inspect a URL, click/fill a page, check a site, capture a screenshot/video, compare visual output, scrape page content, debug console/network/UI issues, or verify an app in practice. Detects installed tools, routes by capability, handles auth, and cleans up.
 
-> *One skill. Any browser tool. The right choice, automatically.*
+## Skill
 
-## Why Use This?
+This repository packages one portable agent skill:
 
-- **Automatic tool detection**: Finds what's installed (agent-browser, Playwright, Claude Code native) and verifies it works
-- **Capability-driven routing**: Picks the best tool based on what the task requires, not what you ask for
-- **Auth handling**: Five modes from zero-config native sessions to manual login checkpoints
-- **Clean failures**: Captures errors, kills browser processes, suggests alternatives
+- `browser` - Unified browser automation for opening, visiting, browsing, interacting with, testing, scraping, screenshotting, visually inspecting, or debugging web pages and local frontends. Use when the user asks to use a browser, Chrome, DevTools, Playwright, agent-browser, chrome-devtools-axi, inspect a URL, click/fill a page, check a site, capture a screenshot/video, compare visual output, scrape page content, debug console/network/UI issues, or verify an app in practice. Detects installed tools, routes by capability, handles auth, and cleans up.
 
-## Prerequisites
+The canonical skill body lives at `skills/browser/SKILL.md`. Keep behavior changes there; keep this README focused on installation and packaging.
 
-At least one of these browser automation tools:
+## Install
 
-| Tool | Install | Best For |
-|------|---------|----------|
-| **agent-browser** | `npm i -g agent-browser && agent-browser install` | Token-efficient reading, fast screenshots, structured extraction |
-| **Playwright** | `npm i -D @playwright/test && npx playwright install` | E2E testing, video recording, network inspection, multi-browser |
-| **Claude Code native** | Enable Claude in Chrome extension (beta) | Zero setup, already authenticated |
-
-No tools required upfront. The skill detects what's available and recommends installs when needed.
-
-## Installation
-
-### From Marketplace
+Clone the repository, then run the installer:
 
 ```bash
-# Add the marketplace
-/plugin marketplace add cbzehner/skill-browser
-
-# Install the skill
-/plugin install browser@cbzehner
+git clone https://github.com/cbzehner/skill-browser.git
+cd skill-browser
+./install.sh all
 ```
 
-### Manual Installation
+Install targets:
 
-Clone into your `.claude/skills/` directory:
+- `./install.sh claude` -> `~/.claude/skills/browser`
+- `./install.sh codex` -> `~/.codex/skills/browser`
+- `./install.sh agents` -> `~/.agents/skills/browser` for generic agent harnesses such as Pi/Hermes-style setups
+- `./install.sh opencode` -> `~/.config/opencode/skills/browser`
+- `./install.sh all --copy` copies files instead of symlinking
 
-```bash
-cd ~/.claude/skills/
-git clone https://github.com/cbzehner/skill-browser.git browser
+Manual installation is just a symlink or copy from `skills/browser` into your agent's skills directory.
+
+## Compatibility
+
+This repo uses the common `skills/<name>/SKILL.md` layout so agents that understand file-based skills can load it directly. Host-specific metadata is included where useful:
+
+- Claude Code: `.claude-plugin/plugin.json` and direct `~/.claude/skills` install
+- Codex CLI: `.codex-plugin/plugin.json` with `skills: "./skills/"` and direct `~/.codex/skills` install
+- Other agents: direct install to the agent's skills directory; unsupported frontmatter fields can be ignored
+
+Some skills mention optional host tools such as `Task`, `Agent`, `Skill`, MCP tools, or browser automation CLIs. On hosts that do not provide those tools, adapt to equivalent local capabilities and keep the same workflow intent.
+
+## Public Safety
+
+These repositories are public. Do not commit organization-specific instructions, private repository names, secrets, tokens, cookies, raw session logs, customer data, or machine-local paths. Use environment variables and generic paths in examples.
+
+## Repository Layout
+
+```text
+.claude-plugin/plugin.json   # Claude plugin metadata
+.codex-plugin/plugin.json    # Codex plugin metadata
+install.sh                   # Symlink/copy installer for common agent skill dirs
+skills/browser/SKILL.md
+README.md
+LICENSE
 ```
-
-## Usage
-
-The skill activates automatically when you ask Claude to interact with a browser:
-
-```
-You: Take a screenshot of localhost:3000
-You: Write E2E tests for the login flow
-You: Scrape the pricing table from example.com
-You: Debug the console errors on the dashboard page
-You: Record a video of the signup flow
-```
-
-## Files
-
-```
-browser/
-├── SKILL.md              # Main skill definition (detection, routing, auth, security)
-├── tools/
-│   ├── agent-browser.md  # Tool reference card
-│   ├── playwright.md     # Tool reference card
-│   └── native.md         # Tool reference card
-├── recipes/
-│   ├── test-app.md       # Write and run E2E tests
-│   ├── screenshot-diff.md # Visual comparison across branches
-│   ├── scrape-page.md    # Extract structured data from URLs
-│   ├── debug-ui.md       # Inspect console errors, network, layout
-│   └── record-session.md # Capture video/screenshots of a flow
-├── docs/                 # Design docs
-├── README.md             # This file
-└── LICENSE               # MIT
-```
-
-## Security
-
-- Browser artifacts (screenshots, videos, HAR files) go under `.agent/evidence/<run-slug>/artifacts/`; evidence bundles are local by default and should be gitignored.
-- Credentials are never logged or stored in plaintext
-- Authenticated pages require explicit user acknowledgment
-- Nothing is uploaded to external services without approval
 
 ## License
 

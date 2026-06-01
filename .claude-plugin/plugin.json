@@ -1,10 +1,10 @@
 {
   "name": "browser",
-  "description": "Unified browser automation. Detects installed tools, routes by capability, handles auth and cleanup.",
+  "description": "Unified browser automation for opening, visiting, browsing, interacting with, testing, scraping, screenshotting, visually inspecting, or debugging web pages and local frontends. Use when the user asks to use a browser, Chrome, DevTools, Playwright, agent-browser, chrome-devtools-axi, inspect a URL, click/fill a page, check a site, capture a screenshot/video, compare visual output, scrape page content, debug console/network/UI issues, or verify an app in practice. Detects installed tools, routes by capability, handles auth, and cleans up.",
   "version": "1.0.0",
   "author": {
     "name": "cbzehner",
-    "email": "chris@cbzehner.com"
+    "url": "https://github.com/cbzehner"
   },
   "repository": "https://github.com/cbzehner/skill-browser",
   "license": "MIT"
