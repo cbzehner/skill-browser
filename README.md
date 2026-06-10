@@ -1,3 +1,5 @@
+> **Moved:** this skill now lives in [cbzehner/skills](https://github.com/cbzehner/skills) under `skills/browser/`. This repo is archived and read-only.
+
 # Browser
 
 Route browser work to the right local automation path. Use it for opening pages, inspecting UI, scraping, screenshots, console checks, and frontend verification.
